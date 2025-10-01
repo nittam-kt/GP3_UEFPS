@@ -1,0 +1,3 @@
+[submodule "Plugins/FpsFramework"]
+	path = Plugins/FpsFramework
+	url = https://github.com/nittam-kt/FpsFramework
