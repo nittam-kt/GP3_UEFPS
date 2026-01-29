@@ -14,6 +14,30 @@
 #include "GP3PlayerState.h"
 
 
+void ALobbyGameMode::BeginPlay()
+{
+    Super::BeginPlay();
+
+    if(!HasAuthority()) return; // サーバのみ
+
+    // URLオプションを読む（HostSession=1 なら起動直後にセッション作成）
+    const FString HostSessionOpt = UGameplayStatics::ParseOption(
+        GetWorld()->GetAuthGameMode()->OptionsString,
+        TEXT("HostSession")
+    );
+
+    const bool bShouldHost = (HostSessionOpt == TEXT("1") || HostSessionOpt.Equals(TEXT("true"), ESearchCase::IgnoreCase));
+
+    if(bShouldHost)
+    {
+        UE_LOG(LogTemp, Log, TEXT("HostSession option detected. Starting CreateSession flow..."));
+        if(auto* Sub = GetGameInstance()->GetSubsystem<USessionSubsystem>())
+        {
+            Sub->StartSession();
+        }
+    }
+}
+
 FString ALobbyGameMode::InitNewPlayer(APlayerController* NewPlayer, const FUniqueNetIdRepl& UniqueId, const FString& Options, const FString& Portal)
 {
     FString result = Super::InitNewPlayer(NewPlayer, UniqueId, Options, Portal);

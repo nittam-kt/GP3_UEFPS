@@ -55,8 +55,8 @@ void USessionSubsystem::CreateLanSession(int32 PublicConnections)
     Settings.bIsLANMatch = false;      // LANではなくインターネットに
     Settings.bShouldAdvertise = true;  // Find に出す
     Settings.bAllowJoinInProgress = true;  // 途中参加OK
-    Settings.bUsesPresence = true;     // Presenceを有効にしてマッチング可視化
-    Settings.bUseLobbiesIfAvailable = true; // Steamロビーを使う
+    Settings.bUsesPresence = false;     // Presenceを無効
+    Settings.bUseLobbiesIfAvailable = false; // ロビーを使わない
     Settings.NumPublicConnections = FMath::Max(1, PublicConnections); // 参加枠（ホスト除く枠数でOK）
     Settings.bAllowJoinViaPresence = true;
 
@@ -97,19 +97,34 @@ void USessionSubsystem::OnCreateComplete(FName, bool bOk)
     if (!bOk) { ClearDelegates(); return; }
 
     const FString CurrentMap = GetWorld()->GetOutermost()->GetName(); // "/Game/Maps/Lobby" など
-    if (IOnlineSubsystem* os = IOnlineSubsystem::Get())
+    UGameplayStatics::OpenLevel(GetWorld(), FName(*CurrentMap), true, TEXT("?listen?HostSession=1"));
+}
+
+void USessionSubsystem::StartSession()
+{
+    const FString CurrentMap = GetWorld()->GetOutermost()->GetName(); // "/Game/Maps/Lobby" など
+    if(IOnlineSubsystem* os = IOnlineSubsystem::Get())
     {
-        if (IOnlineSessionPtr sess = os->GetSessionInterface())
+        if(IOnlineSessionPtr sess = os->GetSessionInterface())
         {
             // セッション開始（内部状態を「スタート」に）
             sess->StartSession(NAME_GameSession);
             UKismetSystemLibrary::PrintString(this, "OnCreateComplete: Success!!",
                 true, true, FColor::Cyan, 4.f, TEXT("None"));
+
+            FNamedOnlineSession* nsess =
+                sess->GetNamedSession(NAME_GameSession);
+            const FOnlineSessionSettings& Settings = nsess->SessionSettings;
+
+            UE_LOG(LogTemp, Log,
+                TEXT("SessionState=%s  bShouldAdvertise=%d  NumPublicConnections=%d  NumOpenPublicConnections=%d"),
+                EOnlineSessionState::ToString(nsess->SessionState),
+                Settings.bShouldAdvertise ? 1 : 0,
+                Settings.NumPublicConnections,
+                nsess->NumOpenPublicConnections
+            );
         }
     }
-    UGameplayStatics::OpenLevel(GetWorld(), FName(*CurrentMap), true, TEXT("?listen"));
-
-
 }
 
 void USessionSubsystem::OnStartComplete(FName, bool bOk)

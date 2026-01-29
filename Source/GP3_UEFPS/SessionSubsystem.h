@@ -38,6 +38,9 @@ public:
     void CreateLanSession(int32 PublicConnections = 3);
 
     UFUNCTION(BlueprintCallable, Category = "Session")
+    void StartSession();
+
+    UFUNCTION(BlueprintCallable, Category = "Session")
     void FindLanSessions(int32 MaxResults = 50);
 
     UFUNCTION(BlueprintCallable, Category = "Session")

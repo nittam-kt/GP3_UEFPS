@@ -14,6 +14,7 @@ class GP3_UEFPS_API ALobbyGameMode : public AGP3_UEFPSGameMode
 {
 	GENERATED_BODY()
 
+	virtual void BeginPlay() override;
 	virtual FString InitNewPlayer(APlayerController* NewPlayer, const FUniqueNetIdRepl& UniqueId,
 		const FString& Options, const FString& Portal) override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
